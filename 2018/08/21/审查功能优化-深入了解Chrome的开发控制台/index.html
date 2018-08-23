@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.4.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="chrome DevTools包含了许多在客户端调试web应用程序的子工具——比如记录性能概要文件和检查动画——大多数这些工具从你学习web开发的早期就已经开始使用了，主要是通过DevTools控制台。 让我们看看其中的一些工具，特别关注控制台和性能指标。 要访问Chrome的开发工具，请执行以下操作:  右键单击页面上的任意位置，从上下文菜单中单击“检查” 在Windows和Linux系统上使用">
+<meta name="keywords" content="Chrome DevTools">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[译]审查功能优化: 深入了解Chrome的开发控制台">
+<meta property="og:url" content="http://kingrychen.github.io/2018/08/21/审查功能优化-深入了解Chrome的开发控制台/index.html">
+<meta property="og:site_name" content="chenjinrui">
+<meta property="og:description" content="chrome DevTools包含了许多在客户端调试web应用程序的子工具——比如记录性能概要文件和检查动画——大多数这些工具从你学习web开发的早期就已经开始使用了，主要是通过DevTools控制台。 让我们看看其中的一些工具，特别关注控制台和性能指标。 要访问Chrome的开发工具，请执行以下操作:  右键单击页面上的任意位置，从上下文菜单中单击“检查” 在Windows和Linux系统上使用">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511917774snippets-tool.gif">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511917906access-dock-console.gif">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918055clear-console.gif">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918116preserve-log.gif">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918418save-console-log.gif">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918483save-as-global-variable.gif">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918826passing-strings.png">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511919036adding-format-specifiers.png">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511919174console.assert.png">
+<meta property="og:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511919265console.count_.png">
+<meta property="og:updated_time" content="2018-08-22T09:04:30.201Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[译]审查功能优化: 深入了解Chrome的开发控制台">
+<meta name="twitter:description" content="chrome DevTools包含了许多在客户端调试web应用程序的子工具——比如记录性能概要文件和检查动画——大多数这些工具从你学习web开发的早期就已经开始使用了，主要是通过DevTools控制台。 让我们看看其中的一些工具，特别关注控制台和性能指标。 要访问Chrome的开发工具，请执行以下操作:  右键单击页面上的任意位置，从上下文菜单中单击“检查” 在Windows和Linux系统上使用">
+<meta name="twitter:image" content="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511917774snippets-tool.gif">
+
+
+
+
+
+
+  <link rel="canonical" href="http://kingrychen.github.io/2018/08/21/审查功能优化-深入了解Chrome的开发控制台/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>[译]审查功能优化: 深入了解Chrome的开发控制台 | chenjinrui</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">chenjinrui</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">do what you like, do what you want</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-translation">
+    <a href="/translation/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-book"></i> <br />翻译</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://kingrychen.github.io/2018/08/21/审查功能优化-深入了解Chrome的开发控制台/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="chenjinrui">
+      <meta itemprop="description" content="be a better man">
+      <meta itemprop="image" content="https://user-images.githubusercontent.com/13636083/44182597-3558fe80-a13a-11e8-9369-70beb857bcf5.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="chenjinrui">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">[译]审查功能优化: 深入了解Chrome的开发控制台
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-08-21 17:51:46" itemprop="dateCreated datePublished" datetime="2018-08-21T17:51:46+08:00">2018-08-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-08-22 17:04:30" itemprop="dateModified" datetime="2018-08-22T17:04:30+08:00">2018-08-22</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/调试工具/" itemprop="url" rel="index"><span itemprop="name">调试工具</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>chrome DevTools包含了许多在客户端调试web应用程序的子工具——比如记录性能概要文件和检查动画——大多数这些工具从你学习web开发的早期就已经开始使用了，主要是通过DevTools控制台。</p>
+<p>让我们看看其中的一些工具，特别关注控制台和性能指标。</p>
+<p>要访问Chrome的开发工具，请执行以下操作:</p>
+<ul>
+<li>右键单击页面上的任意位置，从上下文菜单中单击“检查”</li>
+<li>在Windows和Linux系统上使用键盘快捷键Ctrl + Shift + I，或者在macOS上使用Alt + Command + I</li>
+<li>在Windows和Linux系统上使用键盘快捷键Ctrl + Shift + J，或者在macOS上使用Alt + Command + J。</li>
+</ul>
+<h2 id="代码片段工具"><a href="#代码片段工具" class="headerlink" title="代码片段工具"></a>代码片段工具</h2><p>如果你经常在控制台中直接编写JavaScript代码，请确保改用DevTools的代码片段功能，它类似于代码编辑器，提供编写JavaScript代码片段的机制，在当前页面的上下文中运行这些代码片段并保存以备以后使用。这比直接在控制台中编写多行JavaScript代码要好。</p>
+<p>你可以从 “Sources” 面板访问 “Snippets” 工具。一旦打开，控制台就会堆积在下面(如果没有，只需按Escape )，这样你就可以编写、运行代码并同时看到控制台输出。</p>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511917774snippets-tool.gif" alt=""></p>
+<h2 id="使用Chrome开发工具控制台"><a href="#使用Chrome开发工具控制台" class="headerlink" title="使用Chrome开发工具控制台"></a>使用Chrome开发工具控制台</h2><p>你可以使用控制台通过 JavaScript 与任何网页交互。你可以查询和更改 DOM，并查询/输出不同类型的性能信息。</p>
+<p>当DevTools打开并有焦点时，控制台可以作为全屏专用面板打开，也可以通过按Escape键，作为任何其他DevTools面板旁边的抽屉打开。</p>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511917906access-dock-console.gif" alt=""></p>
+<p>当使用浏览器的控制台时，如果你想输入多行表达式，你需要使用Shift + Enter，因为只要Enter就会执行输入行中的内容。</p>
+<h2 id="控制台历史"><a href="#控制台历史" class="headerlink" title="控制台历史"></a>控制台历史</h2><p>你可以通过不同的方式清除控制台历史记录:</p>
+<ul>
+<li>通过在控制台中键入 <code>clear()</code></li>
+<li>通过调用 <code>console.clear()</code> 方法或 JavaScript 代码</li>
+<li>点击控制台左上角的 clear console 圆圈</li>
+<li>通过在macOS、Windows和Linux中按下 <code>CTRL+L</code> 键</li>
+<li>右键单击控制台，然后按 <em>Clear console</em></li>
+</ul>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918055clear-console.gif" alt=""></p>
+<p>你可以在页面刷新或更改之间保留日志(通过启用保留日志复选框)，直到你清除控制台或关闭选项卡。</p>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918116preserve-log.gif" alt=""></p>
+<p>通过在控制台中单击鼠标右键并选择“另存为…”然后选择日志文件的位置，可以将控制台中的历史记录保存为文本文件。</p>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918418save-console-log.gif" alt=""></p>
+<h2 id="控制台变量"><a href="#控制台变量" class="headerlink" title="控制台变量"></a>控制台变量</h2><p>在控制台中创建的变量会一直保存到页面刷新，所以在声明变量时要注意何时使用 <strong>let</strong> 或 <strong>const</strong> 等关键字。第二次运行相同的代码或函数将抛出一个 <strong>Uncaught SyntaxError</strong>，表示标识符已经声明。你可以使用 或(||)运算符来检查变量是否已经定义，也可以使用 <strong>var</strong>来声明变量，因为它不会对以前声明的变量报错。</p>
+<h2 id="存储为全局变量功能"><a href="#存储为全局变量功能" class="headerlink" title="存储为全局变量功能"></a>存储为全局变量功能</h2><p>如果要从代码中将对象输出到控制台，你可能希望从控制台引用这些变量，以便检查它们的值。让控制台为你搜索，而不是搜索控制台行。有一些内置的方法可以引用这些对象。</p>
+<p>可以使用 <code>＄_</code>，它引用控制台中返回的最后一个对象。</p>
+<p>另一种方法是使用 <strong>Store as global variable</strong> (右键菜单选项)功能，将输出到控制台或从函数返回的任何对象转换为全局变量。新创建的全局变量将被称为 <code>temp1</code>。如果将更多变量存储为全局变量，它们将被称为 <code>temp2</code>、<code>temp3</code> 等。</p>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918483save-as-global-variable.gif" alt=""></p>
+<h2 id="使用condole-log-记录日志"><a href="#使用condole-log-记录日志" class="headerlink" title="使用condole.log()记录日志"></a>使用condole.log()记录日志</h2><p>在构建复杂的客户端web应用程序时，最好使用浏览器提供的调试工具，这可以帮助开发人员在不干扰应用程序的实际用户界面的情况下了解代码级别发生了什么(即使用警报和消息框调试错误)。</p>
+<p>打开 DevTools 控制台后，尝试记录一条简单的语句:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">"hello console"</span>);</span><br></pre></td></tr></table></figure>
+<p><code>console.log()</code> 方法可以采用许多参数和格式说明符。</p>
+<p>可以传递字符串和其他类型的 JavaScript 变量，用逗号分隔，将它们连接成一个字符串，用空格代替逗号。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">"this is a concatenated string composed from: "</span>,<span class="number">1</span>,<span class="string">"and"</span>,&#123;<span class="attr">type</span>:<span class="string">"object"</span>&#125; );</span><br></pre></td></tr></table></figure>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511918826passing-strings.png" alt=""></p>
+<p>你也可以添加格式说明符:</p>
+<ul>
+<li><code>%s</code> : 为字符串指定占位符</li>
+<li><code>%d</code> : 为数字指定占位符</li>
+<li><code>%i</code> : 为整数指定占位符</li>
+<li><code>%f</code> : 为浮点数指定占位符</li>
+<li><code>%o</code> : 为 DOM 元素指定占位符</li>
+<li><code>%O</code> : 为J avaScript 对象指定占位符</li>
+<li><code>%c</code> : 指定 CSS 样式来格式化控制台输出</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> op1 = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">var</span> op2 = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">var</span> result = op1 * op2;</span><br><span class="line"><span class="keyword">var</span> operation = <span class="string">"multiply"</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'%c %s: %d x %d = %d'</span>,<span class="string">'font-size: 24px;background: red; color: white;'</span> ,operation, op1 , op2 , result);</span><br></pre></td></tr></table></figure>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511919036adding-format-specifiers.png" alt=""></p>
+<h2 id="用控制台断言-console-assert"><a href="#用控制台断言-console-assert" class="headerlink" title="用控制台断言 console.assert()"></a>用控制台断言 console.assert()</h2><p><code>console.assert()</code> 评估第一个参数(一个布尔表达式)，如果表达式不成立(评估为false)，则输出第二个参数:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">102</span>;</span><br><span class="line"><span class="keyword">var</span> b = <span class="number">101</span>;</span><br><span class="line"><span class="built_in">console</span>.assert(a &lt; b, <span class="string">"a is bigger than b"</span>);</span><br></pre></td></tr></table></figure>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511919174console.assert.png" alt=""></p>
+<h2 id="使用控制台计算执行次数-console-count"><a href="#使用控制台计算执行次数-console-count" class="headerlink" title="使用控制台计算执行次数 console.count()"></a>使用控制台计算执行次数 console.count()</h2><p><code>console.count(label)</code> 输出同一行代码使用同一标识符被调用的次数。</p>
+<p><img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/11/1511919265console.count_.png" alt=""></p>
+<p>从屏幕截图中可以看到，当同一条语句被传递到 <code>console.count ()</code> 时，计数会增加一。</p>
+<p>(未完待续 … )</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Chrome-DevTools/" rel="tag"># Chrome DevTools</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/10/hello-world/" rel="next" title="[指北]Hexo的基本使用">
+                <i class="fa fa-chevron-left"></i> [指北]Hexo的基本使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://user-images.githubusercontent.com/13636083/44182597-3558fe80-a13a-11e8-9369-70beb857bcf5.jpeg"
+                alt="chenjinrui" />
+            
+              <p class="site-author-name" itemprop="name">chenjinrui</p>
+              <p class="site-description motion-element" itemprop="description">be a better man</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/kingrychen" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:871967481@qq.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://codepen.io/dashboard/" target="_blank" title="Codepen" rel="external nofollow"><i class="fa fa-fw fa-codepen"></i>Codepen</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://www.zhihu.com/people/chen-jin-rui/activities" target="_blank" title="知乎" rel="external nofollow"><i class="fa fa-fw fa-zhihu"></i>知乎</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://juejin.im/user/5ac303acf265da23784075c2" target="_blank" title="掘金" rel="external nofollow"><i class="fa fa-fw fa-audible"></i>掘金</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#代码片段工具"><span class="nav-number">1.</span> <span class="nav-text">代码片段工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Chrome开发工具控制台"><span class="nav-number">2.</span> <span class="nav-text">使用Chrome开发工具控制台</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#控制台历史"><span class="nav-number">3.</span> <span class="nav-text">控制台历史</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#控制台变量"><span class="nav-number">4.</span> <span class="nav-text">控制台变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#存储为全局变量功能"><span class="nav-number">5.</span> <span class="nav-text">存储为全局变量功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用condole-log-记录日志"><span class="nav-number">6.</span> <span class="nav-text">使用condole.log()记录日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用控制台断言-console-assert"><span class="nav-number">7.</span> <span class="nav-text">用控制台断言 console.assert()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用控制台计算执行次数-console-count"><span class="nav-number">8.</span> <span class="nav-text">使用控制台计算执行次数 console.count()</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">chenjinrui</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" rel="external nofollow" href="https://theme-next.org">NexT.Muse</a> v6.4.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
