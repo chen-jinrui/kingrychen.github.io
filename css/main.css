@@ -1857,7 +1857,7 @@ img:hover {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #eb4bff;
+  background: #f6ff9d;
 }
 .links-of-blogroll {
   font-size: 13px;
@@ -2617,4 +2617,15 @@ embed {
   height: 0;
   border-radius: 50%;
   background: #f9f9f9;
+}
+.brand:hover {
+  color: #222;
+}
+.brand {
+  background: #fff;
+  color: #222;
+}
+::selection {
+  background: #fff;
+  color: #222;
 }
